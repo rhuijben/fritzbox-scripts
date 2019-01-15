@@ -1,0 +1,47 @@
+#!/bin/sh
+[ -f "$HOME/.fritz.config" ] && . "$HOME/.fritz.config"
+
+fritzIp=${fritzIp:-fritz.box}
+fritzUrl=${fritzUrl:-http://${fritzIp}}
+fritzSidFile=${fritzSidFile:-"$HOME/.fritz.sid"}
+
+$(dirname "$0")/fb-ensure-sid || exit 1
+
+(
+  curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=log | jq ".data.log[]" \
+        | iconv -sc -f utf-8 -t ascii \
+) | while read -r line
+do
+  case $line in
+\[)
+    rc=0
+    Aall=Aall
+    ;;
+    
+\])
+    day=${A1%.??.??,}
+    my=${A1#??.}
+    month=${my%.??,}
+    year=${my#??.}
+    R="20${year%,}.$month.$day ${A2%,}: ${A3%,}"
+    if [ "$R" = "$fblog_stopat" ]
+    then
+      exit 0
+    fi
+    echo "$R"
+    unset $Aall
+    ;;
+    
+*)
+    rc=$(($rc + 1))
+    eval A$rc="$line"
+    Aall="$Aall A$rc"
+  esac
+done |sort | (
+  if [ -z "$fb_nodate" ]
+  then
+    cat
+  else
+    sed -Ee 's|^[0-9.]* ||'
+  fi
+)    

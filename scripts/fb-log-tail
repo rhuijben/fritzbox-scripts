@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ -r $HOME/.fblog-last$SUFFIX ]
+then
+  export fblog_stopat=`cat $HOME/.fblog-last$SUFFIX`
+else
+  export fblog_stopat=
+fi
+
+$HOME/bin/fb-log | while read line
+do
+  echo "$line"
+  echo -n "$line" > $HOME/.fblog-last$SUFFIX
+done

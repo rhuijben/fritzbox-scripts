@@ -1,0 +1,3 @@
+#!/bin/sh
+
+SUFFIX=syslog $(dirname $0)/fb-log-tail | sed -Ee 's/^[0-9.]* //' | logger -p local2.info -t fb

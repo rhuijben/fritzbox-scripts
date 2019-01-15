@@ -1,0 +1,56 @@
+#!/bin/sh
+[ -f "$HOME/.fritz.config" ] && . "$HOME/.fritz.config"
+
+fritzIp=${fritzIp:-fritz.box}
+fritzUrl=${fritzUrl:-http://${fritzIp}}
+fritzSidFile=${fritzSidFile:-"$HOME/.fritz.sid"}
+
+prefix=
+
+$(dirname "$0")/fb-ensure-sid || exit 1
+
+toclear=
+( curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=netDev  | jq ".data.active[]|{name,port,parent,sum_props,mac,ipv4,ipv6}" \
+    | iconv -cs -f utf-8 -t ascii \
+) | while read -r a b
+do
+  case $a in
+\{)
+  ;;
+\})
+  if [ ! -z "$prefix" ]
+  then
+    prefix=""
+  else
+    echo $Aipv4@$Aname@$Amac@${Aparentname:-${Aport}} ${Asum_props}
+    unset $toclear
+    toclear=
+  fi
+  ;;
+\},)
+  if [ ! -z "$prefix" ]
+  then
+    prefix=""
+  fi
+  ;;
+\],)
+  ;;
+*)
+  name=`eval echo ${a%:}`
+  if [ "$b" = "[" ]
+  then
+    prefix=${prefix}${name}
+    continue
+  elif [ "$b" = "{" ]
+  then
+    prefix=${prefix}${name}
+    continue
+  fi
+  eval A$prefix$name=${b%,}
+  toclear="${toclear} A$prefix$name"
+#  echo A$prefix$name=${b%,}
+esac
+
+done \
+| column -t -s@ |sort -V
+

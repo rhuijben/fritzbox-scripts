@@ -1,0 +1,40 @@
+#!/bin/sh
+# Loosly based on https://github.com/fbartels/scripts/blob/master/avm-fritzbox/fritzbox-login.sh
+# 
+
+[ -f "$HOME/.fritz.config" ] && . "$HOME/.fritz.config"
+
+fritzIp=${fritzIp:-fritz.box}
+fritzUrl=${fritzUrl:-http://${fritzIp}}
+fritzSidFile=${fritzSidFile:-"$HOME/.fritz.sid"}
+fritzUser=${fritzUser:-admin}
+fritzPwd=${fritzPwd:-pw}
+
+if [ ! -f "$fritzSidFile" ]; then
+	touch "$fritzSidFile"
+fi
+
+fritzSid=$(cat $fritzSidFile)
+# check if current login is valid, otherwise generate session id
+result=$(curl -s "${fritzUrl}/login_sid.lua?sid=${fritzSid}" | grep -o "<SID>[a-z0-9]*"| cut -d'>' -f 2)
+if [ "$result" = "0000000000000000" ]
+then
+	echo "Login neccessary" >&2
+	challenge=$(curl -s "${fritzUrl}/login_sid.lua" | grep -o "<Challenge>[a-z0-9]\{8\}" | cut -d'>' -f 2)
+	# Convert to UTF-16LE before md5!
+	fritzhash=$(echo -n "$challenge-$fritzPwd" | iconv -f UTF-8 -t UTF-16LE |md5)
+	curl -s "${fritzUrl}/login_sid.lua?user=${fritzUser}&response=$challenge-$fritzhash" | grep -o "<SID>[a-z0-9]\{16\}" |  cut -d'>' -f 2 > "$fritzSidFile"
+	
+	fritzSid=$(cat $fritzSidFile)
+
+	# recheck if current login is valid, otherwise generate session id
+	result=$(curl -s "${fritzUrl}/login_sid.lua?sid=${fritzSid}" | grep -c "0000000000000000")
+	
+	if [ $result -gt 0 ]
+	then
+	  echo "Login failed. Please update fritzUser and fritzPwd in $HOME/.fritz.config" >&2
+	  exit 1
+	fi
+fi
+
+exit 0
