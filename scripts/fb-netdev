@@ -1,5 +1,5 @@
 #!/bin/sh
-[ -f "$HOME/.fritz.config" ] && . "$HOME/.fritz.config"
+[ -f "${fritzConfig:=$HOME/.fritz.config}" ] && . "${fritzConfig}"
 
 fritzIp=${fritzIp:-fritz.box}
 fritzUrl=${fritzUrl:-http://${fritzIp}}

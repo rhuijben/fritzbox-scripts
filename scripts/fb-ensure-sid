@@ -2,7 +2,7 @@
 # Loosly based on https://github.com/fbartels/scripts/blob/master/avm-fritzbox/fritzbox-login.sh
 # 
 
-[ -f "$HOME/.fritz.config" ] && . "$HOME/.fritz.config"
+[ -f "${fritzConfig:=$HOME/.fritz.config}" ] && . "${fritzConfig}"
 
 fritzIp=${fritzIp:-fritz.box}
 fritzUrl=${fritzUrl:-http://${fritzIp}}
