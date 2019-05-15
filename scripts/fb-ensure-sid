@@ -32,7 +32,7 @@ then
 	
 	if [ $result -gt 0 ]
 	then
-	  echo "Login failed. Please update fritzUser and fritzPwd in $HOME/.fritz.config" >&2
+	  echo "Login failed. Please update fritzUser and fritzPwd (E.g. in '${fritzConfig}')" >&2
 	  exit 1
 	fi
 fi

@@ -24,7 +24,7 @@ do
     month=${my%.??,}
     year=${my#??.}
     R="20${year%,}.$month.$day ${A2%,}: ${A3%,}"
-    if [ "$R" = "$fblog_stopat" ]
+    if [ "${R%% \[*messages since*\]}" = "$fblog_stopat" ]
     then
       exit 0
     fi

@@ -9,5 +9,5 @@ fi
 $HOME/bin/fb-log | while read line
 do
   echo "$line"
-  echo -n "$line" > $HOME/.fblog-last$SUFFIX
+  echo "${line%% \[*messages since*\]}" > $HOME/.fblog-last$SUFFIX
 done
