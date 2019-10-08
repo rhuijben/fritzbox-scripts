@@ -8,7 +8,7 @@ fritzSidFile=${fritzSidFile:-"$HOME/.fritz.sid"}
 $(dirname "$0")/fb-ensure-sid || exit 1
 
 (
-  curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=log | jq ".data.log[]" \
+  curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=log -d filter=0 | jq ".data.log[]" \
         | iconv -sc -f utf-8 -t ascii \
 ) | while read -r line
 do
@@ -23,7 +23,7 @@ do
     my=${A1#??.}
     month=${my%.??,}
     year=${my#??.}
-    R="20${year%,}.$month.$day ${A2%,}: ${A3%,}"
+    R="20${year%,}.$month.$day ${A2%,}: ${A3%,} [FB${A4%,}]"
     if [ "${R%% \[*messages since*\]}" = "$fblog_stopat" ]
     then
       exit 0

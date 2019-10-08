@@ -10,7 +10,7 @@ prefix=
 $(dirname "$0")/fb-ensure-sid || exit 1
 
 toclear=
-( curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=netDev  | jq ".data.active[]|{name,port,parent,sum_props,mac,ipv4,ipv6}" \
+( curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=netDev  | jq ".data.active[]|{name,port,parent,sum_props,mac,ipv4,ipv6,type}" \
     | iconv -cs -f utf-8 -t ascii \
 ) | while read -r a b
 do
@@ -22,7 +22,7 @@ do
   then
     prefix=""
   else
-    echo $Aipv4@$Aname@$Amac@${Aparentname:-${Aport}} ${Asum_props}
+    echo ${Aipv4:-${Aipv6:--}}@${Aname:--}@${Amac:-${Atype:--}}@${Aparentname:-${Aport}} ${Asum_props}
     unset $toclear
     toclear=
   fi
