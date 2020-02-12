@@ -3,7 +3,7 @@
 
 fritzIp=${fritzIp:-fritz.box}
 fritzUrl=${fritzUrl:-http://${fritzIp}}
-fritzSidFile=${fritzSidFile:-"$HOME/.fritz.sid"}
+fritzSidFile=${fritzSidFile:-"$HOME/.fritz.$fritzIp.sid"}
 
 $(dirname "$0")/fb-ensure-sid || exit 1
 
@@ -23,13 +23,16 @@ do
     my=${A1#??.}
     month=${my%.??,}
     year=${my#??.}
-    R="20${year%,}.$month.$day ${A2%,}: ${A3%,} [FB${A4%,}]"
-    RR="20${year%,}.$month.$day ${A2%,}: ${A3%,}"
-    if [ "${RR%% \[*messages since*\]}" = "$fblog_stopat" ]
+    if [ "$(eval echo \${fritzIgnore_FB${A4%,}:-0})" != "1" ]
     then
-      exit 0
+      R="20${year%,}.$month.$day ${A2%,}: ${A3%,} [FB${A4%,}]"
+      RR="20${year%,}.$month.$day ${A2%,}: ${A3%,}"
+      if [ "${RR%% \[*messages since*\]}" = "$fblog_stopat" ]
+      then
+        exit 0
+      fi    
+      echo "$R"
     fi
-    echo "$R"
     unset $Aall
     ;;
     

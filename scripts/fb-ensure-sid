@@ -6,7 +6,7 @@
 
 fritzIp=${fritzIp:-fritz.box}
 fritzUrl=${fritzUrl:-http://${fritzIp}}
-fritzSidFile=${fritzSidFile:-"$HOME/.fritz.sid"}
+fritzSidFile=${fritzSidFile:-"$HOME/.fritz.$fritzIp.sid"}
 fritzUser=${fritzUser:-admin}
 fritzPwd=${fritzPwd:-pw}
 
