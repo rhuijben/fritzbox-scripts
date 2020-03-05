@@ -11,11 +11,10 @@ stack=
 $(dirname "$0")/fb-ensure-sid || exit 1
 
 toclear=
-( curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=netDev  | jq ".data.active[]|{name,port,parent,sum_props,mac,ipv4,ipv6,type,properties}" \
+( curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=netDev  | jq ".data.active[]|{name,port,parent,mac,ipv4,type,properties}" \
     | iconv -cs -f utf-8 -t ascii \
 ) | while read -r a b
 do
-#  echo "-A: $a, B: $b, PF: $prefix"
   case $a in
 \{)
   stack=${stack+$stack }$prefix
@@ -27,11 +26,9 @@ do
 
   [ "${A_port}" == "Wireless" ] && A_port="Main-AP"
   [ "${A_port}" == "wireless LAN" ] && A_port="Main-AP"
-  [ "${A_sum_props}" == "null" ] && A_sum_props=""
-#  echo "Have: $toclear"
   if [ ! -z "${A_name:-}" ]
   then
-    echo ${A_ipv4:-${A_ipv4_ip:-${A_ipv6:--}}}@${A_name:--}@${A_mac:-${A_type:--}}@${A_parent_name:-${A_port}} ${A_sum_props:-${A_properties_txt}}
+    echo ${A_ipv4:-${A_ipv4_ip:--}}@${A_name:--}@${A_mac:-${A_type:--}}@${A_parent_name:-${A_port}} ${A_properties_txt:-}
   fi
   unset $toclear
   toclear=
@@ -65,7 +62,6 @@ do
     fi
     eval A${prefix}_$name=${b%,}
     toclear="${toclear} A${prefix}_$name"
-#    echo A${prefix}_$name=${b%,}
   fi
 esac
 

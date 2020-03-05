@@ -25,13 +25,12 @@ do
     year=${my#??.}
     if [ "$(eval echo \${fritzIgnore_FB${A4%,}:-0})" != "1" ]
     then
-      R="20${year%,}.$month.$day ${A2%,}: ${A3%,} [FB${A4%,}]"
-      RR="20${year%,}.$month.$day ${A2%,}: ${A3%,}"
-      if [ "${RR%% \[*messages since*\]}" = "$fblog_stopat" ]
+      R="20${year%,}.$month.$day ${A2%,}: ${A3%,}"
+      if [ "${R%% \[*messages since*\]}" = "$fblog_stopat" ]
       then
         exit 0
       fi    
-      echo "$R"
+      echo "$R [FB${A4%,}]"
     fi
     unset $Aall
     ;;
