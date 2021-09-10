@@ -1,0 +1,25 @@
+#!/bin/sh
+[ -f "${fritzConfig:=$HOME/.fritz.config}" ] && . "${fritzConfig}"
+
+fritzIp=${fritzIp:-fritz.box}
+fritzUrl=${fritzUrl:-http://${fritzIp}}
+fritzSidFile=${fritzSidFile:-"$HOME/.fritz.$fritzIp.sid"}
+
+prefix=
+stack=
+
+next=
+$(dirname "$0")/fb-ensure-sid || exit 1
+
+( curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=chan -d xhrId=environment \
+    | jq '.data."24ghz".usedChannels[] , .data."5ghz".usedChannels[]' \
+    | iconv -cs -f utf-8 -t ascii \
+) | while read -r a b
+do
+  [ $next ] && echo -n ", "
+  echo -n $a
+  next=yes
+done
+
+echo
+

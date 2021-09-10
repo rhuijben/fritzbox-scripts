@@ -10,8 +10,7 @@ $HOME/bin/fb-log | while read line
 do
   line="${line% \[FB*\]}"
   echo "$line"
-  if [ "$line" = "${line%% \[*messages since*\]}" ]
-  then
-    echo "${line%% \[*messages since*\]}" > $HOME/.fblog-last$SUFFIX
-  fi
+  line="${line%%  \[*messages since*\]}"
+  line="${line%% \[*messages since*\]}"
+  echo "${line}" > $HOME/.fblog-last$SUFFIX
 done

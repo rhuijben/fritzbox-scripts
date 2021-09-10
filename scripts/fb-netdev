@@ -11,7 +11,8 @@ stack=
 $(dirname "$0")/fb-ensure-sid || exit 1
 
 toclear=
-( curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=netDev  | jq ".data.active[]|{name,port,parent,mac,ipv4,type,properties}" \
+( curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=netDev -d xhrId=all \
+    | jq ".data.active[]|{name,port,parent,mac,ipv4,type,properties}" \
     | iconv -cs -f utf-8 -t ascii \
 ) | while read -r a b
 do
@@ -26,6 +27,7 @@ do
 
   [ "${A_port}" == "Wireless" ] && A_port="Main-AP"
   [ "${A_port}" == "wireless LAN" ] && A_port="Main-AP"
+  [ "${A_port}" == "Wi-Fi" ] && A_port="Main-AP"
   if [ ! -z "${A_name:-}" ]
   then
     echo ${A_ipv4:-${A_ipv4_ip:--}}@${A_name:--}@${A_mac:-${A_type:--}}@${A_parent_name:-${A_port}} ${A_properties_txt:-}
