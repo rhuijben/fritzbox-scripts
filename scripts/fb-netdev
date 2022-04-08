@@ -24,10 +24,9 @@ do
 \})
   prefix="${stack##* }"
   stack="${stack% *}"
-
-  [ "${A_port}" == "Wireless" ] && A_port="Main-AP"
-  [ "${A_port}" == "wireless LAN" ] && A_port="Main-AP"
-  [ "${A_port}" == "Wi-Fi" ] && A_port="Main-AP"
+  [ "${A_port}" = "Wireless" ] && A_port="Main-AP"
+  [ "${A_port}" = "wireless LAN" ] && A_port="Main-AP"
+  [ "${A_port}" = 'Wi-Fi' ] && A_port="Main-AP"
   if [ ! -z "${A_name:-}" ]
   then
     echo ${A_ipv4:-${A_ipv4_ip:--}}@${A_name:--}@${A_mac:-${A_type:--}}@${A_parent_name:-${A_port}} ${A_properties_txt:-}

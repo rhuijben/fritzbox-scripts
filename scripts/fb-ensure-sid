@@ -4,6 +4,12 @@
 
 [ -f "${fritzConfig:=$HOME/.fritz.config}" ] && . "${fritzConfig}"
 
+# Try 'md5' and then 'md5sum' if not found.
+my_md5() {
+
+md5 2> /dev/null || (md5sum | /bin/cut -f1 -d" ")
+}
+
 fritzIp=${fritzIp:-fritz.box}
 fritzUrl=${fritzUrl:-http://${fritzIp}}
 fritzSidFile=${fritzSidFile:-"$HOME/.fritz.$fritzIp.sid"}
@@ -22,7 +28,7 @@ then
 	echo "Login neccessary" >&2
 	challenge=$(curl -s "${fritzUrl}/login_sid.lua" | grep -o "<Challenge>[a-z0-9]\{8\}" | cut -d'>' -f 2)
 	# Convert to UTF-16LE before md5!
-	fritzhash=$(echo -n "$challenge-$fritzPwd" | iconv -f UTF-8 -t UTF-16LE |md5)
+	fritzhash=$(echo -n "$challenge-$fritzPwd" | iconv -f UTF-8 -t UTF-16LE |my_md5)
 	curl -s "${fritzUrl}/login_sid.lua?user=${fritzUser}&response=$challenge-$fritzhash" | grep -o "<SID>[a-z0-9]\{16\}" |  cut -d'>' -f 2 > "$fritzSidFile"
 	
 	fritzSid=$(cat $fritzSidFile)
