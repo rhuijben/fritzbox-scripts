@@ -8,40 +8,31 @@ fritzSidFile=${fritzSidFile:-"$HOME/.fritz.$fritzIp.sid"}
 $(dirname "$0")/fb-ensure-sid || exit 1
 
 (
-  curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=log -d filter=0 | jq ".data.log[]" \
+  curl -s "${fritzUrl}/data.lua?sid=$(cat $fritzSidFile)" -d page=log -d filter=0 | jq ".data.log[]|{date,time,msg}" \
         | iconv -sc -f utf-8 -t ascii \
-) | while read -r line
+) | while read -r a b
 do
-  case $line in
-\[)
-    rc=0
+  case $a in
+\{)
     Aall=Aall
     ;;
     
-\])
-    day=${A1%.??.??,}
-    my=${A1#??.}
-    month=${my%.??,}
-    year=${my#??.}
-    if [ "$(eval echo \${fritzIgnore_FB${A4%,}:-0})" != "1" ]
+\})
+    R="${Adate%,} ${Atime%,} ${Amsg}"
+    
+    if [ "${R%% \[*messages since*\]}" = "$fblog_stopat" ]
     then
-      R="20${year%,}.$month.$day ${A2%,}: FB${A4%,}: ${A3%,}"
-      if [ "${R%% \[*messages since*\]}" = "$fblog_stopat" ]
-      then
-        exit 0
-      elif [ "${R%%  \[*messages since*\]}" = "$fblog_stopat" ]
-      then
-        exit 0        
-      fi    
-      echo "$R"
+      exit 0
     fi
+    echo "$R"
     unset $Aall
     ;;
-    
 *)
-    rc=$(($rc + 1))
-    eval A$rc="$line"
-    Aall="$Aall A$rc"
+    aa="${a%%:}"
+    aa="${aa%%\"}"
+    aa="${aa##\"}"
+    eval A$aa="$b"
+    Aall="$Aall A$aa"
   esac
 done |sort | (
   if [ -z "$fb_nodate" ]
